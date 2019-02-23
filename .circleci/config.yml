@@ -1,0 +1,129 @@
+version: 2
+
+jobs:
+
+  python-2.7-test:
+    docker:
+      - image: python:2.7.15-alpine
+    steps:
+      - checkout
+      - attach_workspace:
+          at: tmp
+      - run:
+          command: |
+            pip install tox
+            tox -e py27
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - .coverage.py27
+
+  python-3.4-test:
+    docker:
+      - image: python:3.4.8-alpine
+    steps:
+      - checkout
+      - attach_workspace:
+          at: tmp
+      - run:
+          command: |
+            pip install tox
+            tox -e py34
+      - run:
+          command: apk add ca-certificates
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - .coverage.py34
+
+  python-3.5-test:
+    docker:
+      - image: python:3.5.5-alpine
+    steps:
+      - checkout
+      - attach_workspace:
+          at: tmp
+      - run:
+          command: |
+            pip install tox
+            tox -e py35
+      - run:
+          command: apk add ca-certificates
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - .coverage.py35
+
+  python-3.6-test:
+    docker:
+      - image: python:3.6.5-alpine
+    steps:
+      - checkout
+      - attach_workspace:
+          at: tmp
+      - run:
+          command: |
+            pip install tox
+            tox -e py36
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - .coverage.py36
+
+  python-3.7-test:
+    docker:
+      - image: python:3.7.0-alpine
+    steps:
+      - checkout
+      - attach_workspace:
+          at: tmp
+      - run:
+          command: |
+            pip install tox
+            tox -e py37
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - .coverage.py37
+
+  coverage:
+    docker:
+      - image: python:3.6.5-alpine
+    steps:
+      - checkout
+      - attach_workspace:
+          at: tmp
+      - run:
+          command: |
+            pip install tox
+            tox -e coverage
+      - store_artifacts:
+          path: tmp
+
+  lint:
+    docker:
+      - image: python:3.6.5-alpine
+    steps:
+      - checkout
+      - run:
+          command: |
+            pip install tox
+            tox -e lint
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - python-2.7-test
+      - python-3.4-test
+      - python-3.5-test
+      - python-3.6-test
+      - python-3.7-test
+      - coverage:
+          requires:
+            - python-2.7-test
+            - python-3.4-test
+            - python-3.5-test
+            - python-3.6-test
+            - python-3.7-test
+      - lint
